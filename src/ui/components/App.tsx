@@ -1,33 +1,22 @@
 import { Hash, ScanBarcode } from "lucide-react"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ghdb from "../../ghdb"
+import { useInventory } from "../stores/useInventory";
 
 const resource = "https://api.github.com/repos/ptec/wfc-db/contents/db.json"
 
-type Status = 
-  | "missing"
-  | "checked-in" 
-  | "checked-out"
-
-interface Item {
-  status: Status
-  initialCount: number
-  currentCount: number
-  borrowedBy  : string | null
-}
-
-interface Inventory {
-  [key: string]: Item
-}
-
 export default function App() {
   const [db   , setDb   ] = useState<ghdb      | null>(null)
-  const [data , setData ] = useState<Inventory | null>(null)
+  const [data , setData ] = useState<ghdb.Data | null>(null)
   const [token, setToken] = useState(localStorage.getItem("ghdb:token") ?? "");
 
-  const missing    = Object.entries(data ?? {}).filter(([_, item]) => item.status === "missing"    )
-  const checkedIn  = Object.entries(data ?? {}).filter(([_, item]) => item.status === "checked-in" )
-  const checkedOut = Object.entries(data ?? {}).filter(([_, item]) => item.status === "checked-out")
+  const items      = useInventory((state) => state.items     )
+  const pushRemote = useInventory((state) => state.pushRemote)
+  const pullRemote = useInventory((state) => state.pullRemote)
+
+  useEffect(() => {
+    if (db) pullRemote(db)
+  }, [db])
 
   return <div className="w-dvw h-dvh flex flex-col justify-center items-center gap-2">
     { !db && (
@@ -37,8 +26,7 @@ export default function App() {
         }}/>
         <button className="btn btn-secondary" onClick={() => {
           localStorage.setItem("ghdb:token", token)
-          const db   =   ghdb({ token , resource })          
-          ghdb.read(db).then(data => setData((data as any) as Inventory))
+          const db   =   ghdb({ token , resource })
           setDb(db);
         }}>Login</button>
       </div>
@@ -73,7 +61,7 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-              { Object.entries(data).map(([id, item]) => {
+              { Object.entries(items).map(([id, item]) => {
                 return <tr key={id}>
                   <td>{id               }</td>
                   <td>{item.status      }</td>
