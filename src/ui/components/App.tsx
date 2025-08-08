@@ -236,13 +236,14 @@ export default function App() {
     if (db) pullRemote(db)
   }, [db])
 
-  return <div className="w-dvw h-dvh flex flex-col items-center gap-2 overflow-y-auto">
+  return <div className="w-dvw grow flex flex-col items-center gap-2 overflow-hidden">
     { !db && (
       <div className="flex flex-col grow justify-center gap-1">
         <input className="input" value={token} onChange={(e) => {
           setToken(e.target.value);
         }}/>
         <button className="btn btn-secondary" onClick={() => {
+          if(!token) return
           localStorage.setItem("ghdb:token", token)
           const db   =   ghdb({ token , resource })
           setDb(db);
@@ -437,7 +438,7 @@ export default function App() {
               </label>
 
               { !!items[checkOutQuery] && !!borrowedBy && !!Object.values(items).find(item => item.borrowedBy === borrowedBy) && (
-                <label className="w-xs self-center flex gap-1 items-center rounded-lg p-2 border border-dashed border-warning bg-warning/15 text-warning">
+                <label className="cursor-pointer w-xs self-center flex gap-1 items-center rounded-lg p-2 border border-dashed border-warning bg-warning/15 text-warning">
                   <input required type="checkbox" className="checkbox checkbox-warning"/>
                   <span className="italic text-center">This student has at least one item already checked out to them</span>
                 </label>

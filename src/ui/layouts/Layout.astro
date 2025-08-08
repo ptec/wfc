@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { Package } from "@lucide/astro"
 ---
 
 <html lang="en">
@@ -10,7 +11,11 @@ import "../styles/global.css";
 		<meta name="generator" content={Astro.generator} />
 		<title>PTEC - World's Finest Chocolate</title>
 	</head>
-	<body>
+	<body class="w-dvw h-dvh flex flex-col overflow-hidden font-figtree">
+    <div class="w-full bg-base-100 flex items-center gap-4 p-4 shadow-lg">
+      <Package class="w-10 h-10"/>
+      <span class="text-4xl font-bungee font-semibold">WFC</span>
+    </div>
 		<slot></slot>
   </body>
 </html>
