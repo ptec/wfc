@@ -488,7 +488,7 @@ export default function App() {
                   { checkInOptions.map(([id, item]) => {
                     return <li key={id}><a onClick={() => {
                       setCheckInQuery(id)
-                      setCurrentCount(item.currentCount)
+                      setCurrentCount( 0)
                     }}><pre>{id}</pre> <span className="font-semibold">{item.borrowedBy}</span> </a></li>
                   })}
                   { checkInOptions.length === 0 && <li><a>No results</a></li> }
@@ -503,7 +503,10 @@ export default function App() {
                   }}/>
                 </label>
                 <button className="join-item btn" type="button" onClick={() => {
-                  setCurrentCount(0)
+                  if (!!items[checkInQuery])
+                    setCurrentCount(items[checkInQuery].currentCount)
+                  else
+                    setCurrentCount(0)
                 }}><RotateCcw/></button>
               </div>
 
