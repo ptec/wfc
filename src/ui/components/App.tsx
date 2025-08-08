@@ -1,4 +1,4 @@
-import { Check, Eraser, Hash, Package, Plus, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
+import { Check, ChevronsLeft, ChevronsRight, Eraser, Hash, Package, Plus, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
 import { useEffect, useState } from "react";
 import ghdb from "../../ghdb"
 import { useInventory, type Item, type Status } from "../stores/useInventory";
@@ -496,18 +496,23 @@ export default function App() {
               </div>
 
               <div className="join w-xs self-center">
+                <button className="join-item btn" type="button" onClick={() => {
+                  setCurrentCount(0)
+                }}><ChevronsLeft/></button>
+
                 <label className="input join-item">
                   <Hash/>
                   <input required name="count" type="number" className="grow text-center" value={currentCount} min={0} max={60} onChange={(e) => {
                     setCurrentCount(parseInt(e.target.value))
                   }}/>
                 </label>
+
                 <button className="join-item btn" type="button" onClick={() => {
                   if (!!items[checkInQuery])
                     setCurrentCount(items[checkInQuery].currentCount)
                   else
                     setCurrentCount(0)
-                }}><RotateCcw/></button>
+                }}><ChevronsRight/></button>
               </div>
 
               <label className="cursor-pointer self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
@@ -573,12 +578,20 @@ export default function App() {
                 <input required name="id" type="text" className="grow" placeholder="Scan or enter a barcode"/>
               </label>
 
-              <label className="input self-center w-xs">
-                <Hash/>
-                <input required name="count" type="number" className="grow text-center" value={initialCount} min={1} max={60} onChange={(e) => {
-                  setInitialCount(parseInt(e.target.value))
-                }}/>
-              </label>
+              <div className="join w-xs self-center">
+                <button className="join-item btn" type="button" onClick={() => {
+                  setInitialCount(1)
+                }}><ChevronsLeft/></button>
+                <label className="input join-item">
+                  <Hash/>
+                  <input required name="count" type="number" className="grow text-center" value={initialCount} min={1} max={60} onChange={(e) => {
+                    setInitialCount(parseInt(e.target.value))
+                  }}/>
+                </label>
+                <button className="join-item btn" type="button" onClick={() => {
+                  setInitialCount(60)
+                }}><ChevronsRight/></button>
+              </div>
 
               <button type="submit" className="btn btn-secondary self-center w-xs"><Plus/> Add</button>
             </form>
