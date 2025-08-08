@@ -1,8 +1,7 @@
-import { Check, Eraser, Hash, Plus, ScanBarcode, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
+import { Check, Eraser, Hash, Package, Plus, ScanBarcode, Table, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
 import { useEffect, useState } from "react";
 import ghdb from "../../ghdb"
 import { useInventory, type Item, type Status } from "../stores/useInventory";
-import { create, set } from "lodash";
 
 const resource = "https://api.github.com/repos/ptec/wfc-db/contents/db.json"
 
@@ -11,14 +10,47 @@ function getField(form: FormData, id: string, alt: string = "") {
 }
 
 function Status({ item }: { item: Item }) {
-  if(item.currentCount <= 0)
-    return <div className="w-32 text-sm rounded-full border text-primary bg-primary/15 border-primary flex justify-center">empty</div>
-
   switch(item.status) {
-    case "missing"    : return <div className="w-32 text-sm rounded-full border text-error bg-error/15 border-error flex justify-center">missing    </div>
-    case "checked-in" : return <div className="w-32 text-sm rounded-full border text-success bg-success/15 border-success flex justify-center">checked-in </div>
-    case "checked-out": return <div className="w-32 text-sm rounded-full border text-warning bg-warning/15 border-warning flex justify-center">checked-out</div>
+    case "missing"    : return <div className="font-semibold w-32 text-sm rounded-full border text-error bg-error/15 border-error flex justify-center">missing    </div>
+    case "checked-in" : {
+      if(item.currentCount <= 0)
+        return <div className="font-semibold w-32 text-sm rounded-full border text-primary bg-primary/15 border-primary flex justify-center">completed</div>
+
+      if(item.currentCount < item.initialCount)
+        return <div className="font-semibold w-32 text-sm rounded-full border text-warning bg-warning/15 border-warning flex justify-center">incomplete</div>
+
+      if(item.currentCount === item.initialCount)
+        return <div className="font-semibold w-32 text-sm rounded-full border text-success bg-success/15 border-success flex justify-center">checked-in</div>
+    }
+    case "checked-out": return <div className="font-semibold w-32 text-sm rounded-full border text-warning bg-warning/15 border-warning flex justify-center">checked-out</div>
   }
+}
+
+function Time({ iso }: { iso: string }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 10000); // update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const timestamp = new Date(iso);
+  const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000); // seconds
+
+  const format = () => {
+    if (diff < 1) return "less than a second ago";
+    if (diff < 60) return "less than a minute ago";
+    if (diff < 120) return "a minute ago";
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 7200) return "an hour ago";
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    if (diff < 172800) return "a day ago";
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
+
+  return <span title={timestamp.toLocaleString()}>{format()}</span>;
 }
 
 export default function App() {
@@ -59,6 +91,69 @@ export default function App() {
     (
       id              .toLowerCase().includes(deleteQuery.toLowerCase()) || 
       item.borrowedBy?.toLowerCase().includes(deleteQuery.toLowerCase())
+    )
+  ))
+
+  const boxesSold       = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "checked-in" && item.currentCount === 0)
+      return n + 1
+    return n
+  }, 0)
+
+  const boxesCheckedIn  = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "checked-in" && item.currentCount > 0)
+      return n + 1
+    return n
+  }, 0)
+
+  const boxesCheckedOut = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "checked-out")
+      return n + 1
+    return n
+  }, 0)
+
+  const boxesMissing = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "missing")
+      return n + 1
+    return n
+  }, 0)
+
+  const barsSold       = Object.entries(items).reduce((n, [id, item]) => {
+    return n + item.initialCount - item.currentCount
+  }, 0)
+
+
+  const barsCheckedIn  = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "checked-in" && item.currentCount > 0)
+      return n + item.currentCount
+    return n
+  }, 0)
+  
+  const barsCheckedOut = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "checked-out" && item.currentCount > 0)
+      return n + item.currentCount
+    return n
+  }, 0)
+  
+  const barsMissing    = Object.entries(items).reduce((n, [id, item]) => {
+    if (item.status === "missing" && item.currentCount > 0)
+      return n + item.currentCount
+    return n
+  }, 0)
+
+  const totalBoxes = Object.entries(items).reduce((n, [id, item]) => {
+    return n + 1
+  }, 0)
+
+  const totalBars  = Object.entries(items).reduce((n, [id, item]) => {
+    return n + item.initialCount
+  }, 0)
+
+  const dashboard = Object.entries(items).filter(([id, item]) => (
+    item.status === "checked-out" || (
+      item.status === "checked-in" && 
+      item.currentCount >                 0 && 
+      item.currentCount < item.initialCount
     )
   ))
 
@@ -136,15 +231,13 @@ export default function App() {
     }
   }
 
-
-
   useEffect(() => {
     if (db) pullRemote(db)
   }, [db])
 
-  return <div className="w-dvw min-h-dvh flex flex-col justify-center items-center gap-2">
+  return <div className="w-dvw h-dvh flex flex-col items-center gap-2 overflow-y-auto">
     { !db && (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col grow justify-center gap-1">
         <input className="input" value={token} onChange={(e) => {
           setToken(e.target.value);
         }}/>
@@ -160,6 +253,127 @@ export default function App() {
         <input type="radio" name="tabs" className="tab" aria-label="Dashboard" defaultChecked/>
         <div className="tab-content p-6">
           <div className="flex flex-col w-full items-center gap-2">
+            <div className="flex justify-center w-4xl gap-4 flex-wrap">
+
+              <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
+                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-primary bg-primary/15 text-primary flex justify-center">
+                  Completed
+                </span>
+                <div className="w-full flex items-center justify-between text-primary">
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{boxesSold}</p>
+                    <p className="text-sm">Boxes</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{barsSold}</p>
+                    <p className="text-sm">Bars</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{Math.floor(barsSold / totalBars * 100)}%</p>
+                    <p className="text-sm">of Total Inventory</p>
+                  </div>
+                </div>
+                <progress className="progress progress-primary" value={barsSold} max={totalBars}/>
+              </div>
+
+              <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
+                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-success bg-success/15 text-success flex justify-center">
+                  Available
+                </span>
+                <div className="w-full flex items-center justify-between text-success">
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{boxesCheckedIn}</p>
+                    <p className="text-sm">Boxes</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{barsCheckedIn}</p>
+                    <p className="text-sm">Bars</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{Math.floor(barsCheckedIn / totalBars * 100)}%</p>
+                    <p className="text-sm">of Total Inventory</p>
+                  </div>
+                </div>
+                <progress className="progress progress-success" value={barsCheckedIn} max={totalBars}/>
+              </div>
+
+              <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
+                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-warning bg-warning/15 text-warning flex justify-center">
+                  Checked Out
+                </span>
+                <div className="w-full flex items-center justify-between text-warning">
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{boxesCheckedOut}</p>
+                    <p className="text-sm">Boxes</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{barsCheckedOut}</p>
+                    <p className="text-sm">Bars</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{Math.floor(barsCheckedOut / totalBars * 100)}%</p>
+                    <p className="text-sm">of Total Inventory</p>
+                  </div>
+                </div>
+                <progress className="progress progress-warning" value={barsCheckedOut} max={totalBars}/>
+              </div>
+
+              <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
+                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-error bg-error/15 text-error flex justify-center">
+                  Missing
+                </span>
+                <div className="w-full flex items-center justify-between text-error">
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{boxesMissing}</p>
+                    <p className="text-sm">Boxes</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{barsMissing}</p>
+                    <p className="text-sm">Bars</p>
+                  </div>
+                  <div className="flex flex-col gap-1 items-center">
+                    <p className="text-4xl font-bold">{Math.floor(barsMissing / totalBars * 100)}%</p>
+                    <p className="text-sm">of Total Inventory</p>
+                  </div>
+                </div>
+                <progress className="progress progress-error" value={barsMissing} max={totalBars}/>
+              </div>
+            </div>
+
+            <div className="divider w-4xl self-center"></div>
+
+            <div className="flex flex-wrap w-5xl self-center justify-center items-center gap-2">
+              { dashboard.map(([id, item]) => {
+                return (
+                  <div key={id} className="w-80 h-40 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-4">
+                    <span className="flex justify-between items-center"><pre className="font-bold text-lg">{id}</pre><Status item={item}/></span>
+                    {item.borrowedBy && <div className="flex gap-1">
+                      <span>Checked out by</span> 
+                      <span className="font-semibold">{item.borrowedBy}</span>
+                    </div>}
+                    <div className="grow"></div>
+                    <div className="flex justify-between">
+                      <div className="flex gap-1">
+                        <span className="font-semibold">{item.currentCount}</span>
+                        <span>of</span>
+                        <span>{item.initialCount}</span>
+                        <span>bars</span>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <span>{Math.floor(item.currentCount / item.initialCount * 100)}%</span>
+                      </div>
+                    </div>
+                    
+                    <progress className="progress" value={item.currentCount} max={item.initialCount}/>
+
+                    <span className="text-sm">
+                      <Time iso={item.lastModified}/>
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
 
@@ -202,7 +416,7 @@ export default function App() {
                   { checkOutOptions.map(([id, item]) => {
                     return <li key={id}><a onClick={() => {
                       setCheckOutQuery(id)
-                    }}>{id} ({item.currentCount})</a></li>
+                    }}><pre>{id}</pre> <span className="badge badge-secondary">{item.currentCount}</span></a></li>
                   })}
                   { checkOutOptions.length === 0 && <li><a>No results</a></li> }
                 </ul>
@@ -257,7 +471,7 @@ export default function App() {
                   { checkInOptions.map(([id, item]) => {
                     return <li key={id}><a onClick={() => {
                       setCheckInQuery(id)
-                    }}>{id} to: {item.borrowedBy} </a></li>
+                    }}><pre>{id}</pre> to: {item.borrowedBy} </a></li>
                   })}
                   { checkInOptions.length === 0 && <li><a>No results</a></li> }
                 </ul>
@@ -295,7 +509,7 @@ export default function App() {
                     <td className="text-center">{item.borrowedBy || "-"}</td>
                     <td className="text-center">{item.initialCount     }</td>
                     <td className="text-center">{item.currentCount     }</td>
-                    <td className="text-center">{item.lastModified     }</td>
+                    <td className="text-center"><Time iso={item.lastModified}/></td>
                   </tr>
                 })}
               </tbody>
@@ -304,7 +518,7 @@ export default function App() {
         </div>
 
         <input type="radio" name="tabs" className="tab" aria-label="Manage" />
-        <div className="tab-content p-6">
+        <div className="tab-content p-6 overflow-y-auto">
           <div className="flex flex-col w-full items-center gap-2">
             <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
@@ -456,7 +670,7 @@ export default function App() {
                   <tr>
                     <td className="text-center">{items[missingQuery].initialCount}</td>
                     <td className="text-center">{items[missingQuery].currentCount}</td>
-                    <td className="text-center">{items[missingQuery].lastModified}</td>
+                    <td className="text-center"><Time iso={items[missingQuery].lastModified}/></td>
                   </tr>
                 </tbody>
               </table>
@@ -514,7 +728,7 @@ export default function App() {
                   <tr>
                     <td className="text-center">{items[deleteQuery].initialCount}</td>
                     <td className="text-center">{items[deleteQuery].currentCount}</td>
-                    <td className="text-center">{items[deleteQuery].lastModified}</td>
+                    <td className="text-center"><Time iso={items[deleteQuery].lastModified}/></td>
                   </tr>
                 </tbody>
               </table>
