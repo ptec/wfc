@@ -201,9 +201,6 @@ export default function App() {
         if (item.status === "missing"    ) throw new Error(`Item '${id}' is missing`)
         if (item.currentCount <= 0       ) throw new Error(`Item '${id}' is empty`)
 
-        if(!!Object.values(items).find((item) => item.borrowedBy === borrowedBy))
-          throw new Error(`Person '${borrowedBy}' has already checked out an item`)
-
         return {...item, status: "checked-out", borrowedBy }
       })
       pushRemote(db!).then(() => alert(`Item '${id}' checked out to '${borrowedBy}'`))
@@ -395,6 +392,7 @@ export default function App() {
               tryCheckOutItem(id, borrowedBy)
               e.currentTarget.reset()
               setCheckOutQuery("")
+              setBorrowedBy(null)
             }}>
               <span className="text-2xl font-semibold">Check Out Item</span>
 
@@ -426,18 +424,12 @@ export default function App() {
                 </ul>
               </div>
 
-              <div className="join w-xs self-center">
-                <label className="input join-item">
-                  <UserRound/>
-                  <input name="borrowedBy" type="text" className="grow" placeholder="Scan or enter a barcode" value={borrowedBy ?? ""} onChange={(e) => {
-                    setBorrowedBy(e.target.value)
-                  }}/>
-                </label>
-
-                <button className="join-item btn" type="button" onClick={() => {
-                  setBorrowedBy(null)
-                }}><Eraser/></button>
-              </div>
+              <label className="input w-xs self-center">
+                <UserRound/>
+                <input name="borrowedBy" type="text" className="grow" placeholder="Scan or enter a barcode" value={borrowedBy ?? ""} onChange={(e) => {
+                  setBorrowedBy(e.target.value)
+                }}/>
+              </label>
 
               <label className="cursor-pointer self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
                 <input required type="checkbox" className="checkbox checkbox-secondary"/>
