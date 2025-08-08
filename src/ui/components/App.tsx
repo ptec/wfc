@@ -236,7 +236,7 @@ export default function App() {
     if (db) pullRemote(db)
   }, [db])
 
-  return <div className="w-dvw grow flex flex-col items-center gap-2 overflow-hidden">
+  return <div className="w-dvw grow flex flex-col items-center gap-2 overflow-y-auto">
     { !db && (
       <div className="flex flex-col grow justify-center gap-1">
         <input className="input" value={token} onChange={(e) => {
@@ -553,11 +553,12 @@ export default function App() {
                 })}
               </tbody>
             </table>
+            <div className="h-48"></div>
           </div>
         </div>
 
         <input type="radio" name="tabs" className="tab" aria-label="Manage" />
-        <div className="tab-content p-6 overflow-y-auto">
+        <div className="tab-content p-6">
           <div className="flex flex-col w-full items-center gap-2">
             <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
@@ -678,9 +679,10 @@ export default function App() {
 
               <button className="btn btn-error self-center w-xs" type="submit"><Trash/>Delete</button>
             </form>
+
+            <div className="h-48"></div>
           </div>
         </div>
-
       </div>
     )}
 
