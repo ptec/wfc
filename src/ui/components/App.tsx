@@ -405,13 +405,13 @@ export default function App() {
                   <div tabIndex={0} role="button" className="grow">
                     <label className="join-item input">
                       <ScanBarcode/>
-                      <input required name="id" type="text" className="grow" placeholder="Scan or enter a barcode" value={checkOutQuery} onChange={(e) => {
+                      <input name="id" type="text" className="grow" placeholder="Scan or enter a barcode" value={checkOutQuery} onChange={(e) => {
                         setCheckOutQuery(e.target.value)
                       }}/>
                     </label>
                   </div>
 
-                  <button className="join-item btn" onClick={() => {
+                  <button className="join-item btn" type="button" onClick={() => {
                     setCheckOutQuery("")
                   }}><Eraser/></button>
                 </div>
@@ -429,7 +429,7 @@ export default function App() {
               <div className="join w-xs self-center">
                 <label className="input join-item">
                   <UserRound/>
-                  <input required name="borrowedBy" type="text" className="grow" placeholder="Scan or enter a barcode" value={borrowedBy ?? ""} onChange={(e) => {
+                  <input name="borrowedBy" type="text" className="grow" placeholder="Scan or enter a barcode" value={borrowedBy ?? ""} onChange={(e) => {
                     setBorrowedBy(e.target.value)
                   }}/>
                 </label>
@@ -439,7 +439,7 @@ export default function App() {
                 }}><Eraser/></button>
               </div>
 
-              <label className="self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
+              <label className="cursor-pointer self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
                 <input required type="checkbox" className="checkbox checkbox-secondary"/>
                 <span className="italic text-center">This student has received written permission to check out this item</span>
               </label>
@@ -451,7 +451,7 @@ export default function App() {
                 </label>
               )}
 
-              <button className="btn btn-secondary self-center w-xs"><Tag/> Check Out</button>
+              <button type="submit" className="btn btn-secondary self-center w-xs"><Tag/> Check Out</button>
             </form>
           </div>
         </div>
@@ -481,13 +481,13 @@ export default function App() {
                   <div tabIndex={0} role="button" className="grow">
                     <label className="input join-item">
                       <ScanBarcode/>
-                      <input required name="id" type="text" className="grow" placeholder="Scan or enter a barcode" value={checkInQuery} onChange={(e) => {
+                      <input name="id" type="text" className="grow" placeholder="Scan or enter a barcode" value={checkInQuery} onChange={(e) => {
                         setCheckInQuery(e.target.value)
                       }}/>
                     </label>
                   </div>
 
-                  <button className="join-item btn" onClick={() => {
+                  <button type="button" className="join-item btn" onClick={() => {
                     setCheckInQuery("")
                   }}><Eraser/></button>
                 </div>
@@ -515,12 +515,12 @@ export default function App() {
                 }}><RotateCcw/></button>
               </div>
 
-              <label className="self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
+              <label className="cursor-pointer self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
                 <input required type="checkbox" className="checkbox checkbox-secondary"/>
                 <span className="italic text-center">This student has surrendered the appropriate funds {!!items[checkInQuery] && <b>(${items[checkInQuery].currentCount - currentCount})</b>} to return this item</span>
               </label>
 
-              <button className="btn btn-secondary self-center w-xs"><Check/> Check In</button>
+              <button type="submit" className="btn btn-secondary self-center w-xs"><Check/> Check In</button>
             </form>
           </div>
         </div>
@@ -585,7 +585,7 @@ export default function App() {
                 }}/>
               </label>
 
-              <button className="btn btn-secondary self-center w-xs"><Plus/> Add</button>
+              <button type="submit" className="btn btn-secondary self-center w-xs"><Plus/> Add</button>
             </form>
 
             <div className="divider self-center w-lg"></div>
