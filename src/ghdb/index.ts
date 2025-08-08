@@ -10,10 +10,12 @@ export function ghdb({
   token   : string;
   resource: string;
 }): ghdb {
-  const headers = { 
+  const headers: Record<string, string> = token ? { 
     "Authorization": `token ${token}`,
     "Accept"       : "application/vnd.github+json",
-  } as const
+  } : {
+    "Accept"       : "application/vnd.github+json",
+  }
 
   return {
     resource,
