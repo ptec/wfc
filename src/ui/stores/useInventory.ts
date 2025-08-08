@@ -9,9 +9,10 @@ export type Status =
 
 export interface Item  {
   status: Status
+  borrowedBy  : string | null
   initialCount: number
   currentCount: number
-  borrowedBy  : string | null
+  lastModified: string
 }
 
 export interface Items extends Record<string, Item> {
@@ -25,7 +26,7 @@ export interface Inventory {
   pullRemote(db: ghdb): Promise<void>
   createItem(id: string, item : Item): void
   deleteItem(id: string             ): void
-  updateItem(id: string, apply: (item: Item) => Item): void
+  updateItem(id: string, update: (item: Item) => Item): void
 }
 
 export const useInventory = create<Inventory>()(
@@ -43,15 +44,29 @@ export const useInventory = create<Inventory>()(
     },    
 
     createItem: function (id: string, item: Item) {
-      set((state) => state.items[id] = item)
+      if (get().items[id]) throw new Error(`Item with id '${id}' already exists`)
+      const lastModified = new Date().toISOString()
+      set((state) => {
+        state.items[id]              = item
+        state.items[id].lastModified = lastModified
+      })
     },
 
     deleteItem: function (id: string) {
-      set((state) => delete state.items[id])
+      if (!get().items[id]) throw new Error(`Item with id '${id}' does not exist`)
+      set((state) => {
+        delete state.items[id]
+      })
     },
 
-    updateItem: function (id: string, apply: (item: Item) => Item) {
-      set((state) => state.items[id] = apply(state.items[id]))
+    updateItem: function (id: string, update: (item: Item) => Item) {
+      if (!get().items[id]) throw new Error(`Item with id '${id}' does not exist`)
+      const lastModified = new Date().toISOString()
+      set((state) => {
+        const item = update(state.items[id])
+        state.items[id]              = item
+        state.items[id].lastModified = lastModified
+      })
     }
   }))
 )
