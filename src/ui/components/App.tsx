@@ -1,4 +1,4 @@
-import { Check, Eraser, Hash, Package, Plus, ScanBarcode, Table, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
+import { Check, Eraser, Hash, Package, Plus, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
 import { useEffect, useState } from "react";
 import ghdb from "../../ghdb"
 import { useInventory, type Item, type Status } from "../stores/useInventory";
@@ -37,17 +37,17 @@ function Time({ iso }: { iso: string }) {
   }, []);
 
   const timestamp = new Date(iso);
-  const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000); // seconds
+  const diff = Math.round((now.getTime() - timestamp.getTime()) / 1000); // seconds
 
   const format = () => {
     if (diff < 1) return "less than a second ago";
     if (diff < 60) return "less than a minute ago";
     if (diff < 120) return "a minute ago";
-    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 3600) return `${Math.round(diff / 60)} minutes ago`;
     if (diff < 7200) return "an hour ago";
-    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    if (diff < 86400) return `${Math.round(diff / 3600)} hours ago`;
     if (diff < 172800) return "a day ago";
-    return `${Math.floor(diff / 86400)} days ago`;
+    return `${Math.round(diff / 86400)} days ago`;
   };
 
   return <span title={timestamp.toLocaleString()}>{format()}</span>;
@@ -69,6 +69,10 @@ export default function App() {
   const [ checkOutQuery, setCheckOutQuery ] = useState("")
   const [ missingQuery , setMissingQuery  ] = useState("")
   const [ deleteQuery  , setDeleteQuery   ] = useState("")
+
+  const [initialCount, setInitialCount] = useState(60)
+  const [currentCount, setCurrentCount] = useState( 0)
+  const [borrowedBy  , setBorrowedBy  ] = useState<string | null>(null)
 
   const checkInOptions = Object.entries(items).filter(([id, item]) => (
     (
@@ -269,7 +273,7 @@ export default function App() {
                     <p className="text-sm">Bars</p>
                   </div>
                   <div className="flex flex-col gap-1 items-center">
-                    <p className="text-4xl font-bold">{Math.floor(barsSold / totalBars * 100)}%</p>
+                    <p className="text-4xl font-bold">{Math.round(barsSold / totalBars * 100)}%</p>
                     <p className="text-sm">of Total Inventory</p>
                   </div>
                 </div>
@@ -290,7 +294,7 @@ export default function App() {
                     <p className="text-sm">Bars</p>
                   </div>
                   <div className="flex flex-col gap-1 items-center">
-                    <p className="text-4xl font-bold">{Math.floor(barsCheckedIn / totalBars * 100)}%</p>
+                    <p className="text-4xl font-bold">{Math.round(barsCheckedIn / totalBars * 100)}%</p>
                     <p className="text-sm">of Total Inventory</p>
                   </div>
                 </div>
@@ -311,7 +315,7 @@ export default function App() {
                     <p className="text-sm">Bars</p>
                   </div>
                   <div className="flex flex-col gap-1 items-center">
-                    <p className="text-4xl font-bold">{Math.floor(barsCheckedOut / totalBars * 100)}%</p>
+                    <p className="text-4xl font-bold">{Math.round(barsCheckedOut / totalBars * 100)}%</p>
                     <p className="text-sm">of Total Inventory</p>
                   </div>
                 </div>
@@ -332,7 +336,7 @@ export default function App() {
                     <p className="text-sm">Bars</p>
                   </div>
                   <div className="flex flex-col gap-1 items-center">
-                    <p className="text-4xl font-bold">{Math.floor(barsMissing / totalBars * 100)}%</p>
+                    <p className="text-4xl font-bold">{Math.round(barsMissing / totalBars * 100)}%</p>
                     <p className="text-sm">of Total Inventory</p>
                   </div>
                 </div>
@@ -361,7 +365,7 @@ export default function App() {
                       </div>
 
                       <div className="flex flex-col gap-1">
-                        <span>{Math.floor(item.currentCount / item.initialCount * 100)}%</span>
+                        <span>{Math.round(item.currentCount / item.initialCount * 100)}% remaining</span>
                       </div>
                     </div>
                     
@@ -394,7 +398,7 @@ export default function App() {
             }}>
               <span className="text-2xl font-semibold">Check Out Item</span>
 
-              <span className="italic">Check out an item to a volunteer</span>
+              <span className="italic">Check out an item to a student</span>
 
               <div className="dropdown self-center">
                 <div className="join w-xs">
@@ -422,10 +426,30 @@ export default function App() {
                 </ul>
               </div>
 
-              <label className="input self-center w-xs">
-                <UserRound/>
-                <input required name="borrowedBy" type="text" className="grow" placeholder="Scan or enter a barcode"/>
+              <div className="join w-xs self-center">
+                <label className="input join-item">
+                  <UserRound/>
+                  <input required name="borrowedBy" type="text" className="grow" placeholder="Scan or enter a barcode" value={borrowedBy ?? ""} onChange={(e) => {
+                    setBorrowedBy(e.target.value)
+                  }}/>
+                </label>
+
+                <button className="join-item btn" type="button" onClick={() => {
+                  setBorrowedBy(null)
+                }}><Eraser/></button>
+              </div>
+
+              <label className="self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
+                <input required type="checkbox" className="checkbox checkbox-secondary"/>
+                <span className="italic text-center">This student has received written permission to check out this item</span>
               </label>
+
+              { !!items[checkOutQuery] && !!borrowedBy && !!Object.values(items).find(item => item.borrowedBy === borrowedBy) && (
+                <label className="w-xs self-center flex gap-1 items-center rounded-lg p-2 border border-dashed border-warning bg-warning/15 text-warning">
+                  <input required type="checkbox" className="checkbox checkbox-warning"/>
+                  <span className="italic text-center">This student has at least one item already checked out to them</span>
+                </label>
+              )}
 
               <button className="btn btn-secondary self-center w-xs"><Tag/> Check Out</button>
             </form>
@@ -446,6 +470,7 @@ export default function App() {
               tryCheckInItem(id, count)
               e.currentTarget.reset()
               setCheckInQuery("")
+              setCurrentCount(0)
             }}>
               <span className="text-2xl font-semibold">Check In Item</span>
 
@@ -471,15 +496,28 @@ export default function App() {
                   { checkInOptions.map(([id, item]) => {
                     return <li key={id}><a onClick={() => {
                       setCheckInQuery(id)
-                    }}><pre>{id}</pre> to: {item.borrowedBy} </a></li>
+                      setCurrentCount(item.currentCount)
+                    }}><pre>{id}</pre> <span className="font-semibold">{item.borrowedBy}</span> </a></li>
                   })}
                   { checkInOptions.length === 0 && <li><a>No results</a></li> }
                 </ul>
               </div>
 
-              <label className="input self-center w-xs">
-                <Hash/>
-                <input required name="count" type="number" className="grow text-center" defaultValue={0} min={0} max={60}/>
+              <div className="join w-xs self-center">
+                <label className="input join-item">
+                  <Hash/>
+                  <input required name="count" type="number" className="grow text-center" value={currentCount} min={0} max={60} onChange={(e) => {
+                    setCurrentCount(parseInt(e.target.value))
+                  }}/>
+                </label>
+                <button className="join-item btn" type="button" onClick={() => {
+                  setCurrentCount(0)
+                }}><RotateCcw/></button>
+              </div>
+
+              <label className="self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
+                <input required type="checkbox" className="checkbox checkbox-secondary"/>
+                <span className="italic text-center">This student has surrendered the appropriate funds {!!items[checkInQuery] && <b>(${items[checkInQuery].currentCount - currentCount})</b>} to return this item</span>
               </label>
 
               <button className="btn btn-secondary self-center w-xs"><Check/> Check In</button>
@@ -542,7 +580,9 @@ export default function App() {
 
               <label className="input self-center w-xs">
                 <Hash/>
-                <input required name="count" type="number" className="grow text-center" defaultValue={60} min={1} max={60}/>
+                <input required name="count" type="number" className="grow text-center" value={initialCount} min={1} max={60} onChange={(e) => {
+                  setInitialCount(parseInt(e.target.value))
+                }}/>
               </label>
 
               <button className="btn btn-secondary self-center w-xs"><Plus/> Add</button>
@@ -580,7 +620,7 @@ export default function App() {
                   { missingOptions.map(([id, item]) => {
                     return <li key={id}><a onClick={() => {
                       setMissingQuery(id)
-                    }}><Status item={item}/> {id} ({item.currentCount})</a></li>
+                    }}><Status item={item}/> <pre>{id}</pre> <div className="badge badge-secondary">{item.currentCount}</div></a></li>
                   })}
                   { missingOptions.length === 0 && <li><a>No results</a></li> }
                 </ul>
@@ -621,7 +661,7 @@ export default function App() {
                   { deleteOptions.map(([id, item]) => {
                     return <li key={id}><a onClick={() => {
                       setDeleteQuery(id)
-                    }}><Status item={item}/> {id} ({item.currentCount})</a></li>
+                    }}><Status item={item}/> <pre>{id}</pre> <div className="badge badge-secondary">{item.currentCount}</div></a></li>
                   })}
                   { deleteOptions.length === 0 && <li><a>No results</a></li> }
                 </ul>
