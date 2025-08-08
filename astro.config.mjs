@@ -11,5 +11,8 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()]
-  }
+  },
+
+  site: "https://ptec.github.io/wfc",
+  base: "/wfc"
 });
