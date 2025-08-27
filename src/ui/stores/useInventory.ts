@@ -10,6 +10,7 @@ export type Status =
 export interface Item  {
   status: Status
   borrowedBy  : string | null
+  returnedBy  : string | null
   initialCount: number
   currentCount: number
   lastModified: string

@@ -166,6 +166,7 @@ export default function App() {
       createItem(id, {
         status: "checked-in",
         borrowedBy: null,
+        returnedBy: null,
         initialCount: count,
         currentCount: count,
         lastModified: new Date().toISOString()
@@ -201,7 +202,7 @@ export default function App() {
         if (item.status === "missing"    ) throw new Error(`Item '${id}' is missing`)
         if (item.currentCount <= 0       ) throw new Error(`Item '${id}' is empty`)
 
-        return {...item, status: "checked-out", borrowedBy }
+        return {...item, status: "checked-out", borrowedBy, returnedBy: null }
       })
       pushRemote(db!).then(() => alert(`Item '${id}' checked out to '${borrowedBy}'`))
     } catch (error: any) {
@@ -215,9 +216,11 @@ export default function App() {
         if (currentCount > item.currentCount) throw new Error(`Cannot check in more than '${item.currentCount}'`)
         if (item.status === "checked-in") throw new Error(`Item '${id}' is checked in`)
         if (item.status === "missing"   ) throw new Error(`Item '${id}' is missing`)
-        return {...item, status: "checked-in" , currentCount, borrowedBy: null }
+
+        const returnedBy = item.borrowedBy
+        return {...item, status: "checked-in" , currentCount, returnedBy, borrowedBy: null }
       })
-      pushRemote(db!).then(() => alert(`Item '${id}' checked in with '${currentCount}'`))
+      pushRemote(db!).then(() => alert(`Item '${id}' checked in with '${currentCount}' remaining`))
     } catch (error: any) {
       alert(error.message)
     }
@@ -535,6 +538,7 @@ export default function App() {
                   <th className="text-center">Id           </th>
                   <th className="text-center">Status       </th>
                   <th className="text-center">Borrowed By  </th>
+                  <th className="text-center">Returned By  </th>
                   <th className="text-center">Initial Count</th>
                   <th className="text-center">Current Count</th>
                   <th className="text-center">Last Modified</th>
@@ -546,6 +550,7 @@ export default function App() {
                     <td className="text-center"><pre>{id}</pre></td>
                     <td><Status item={item}/></td>
                     <td className="text-center">{item.borrowedBy || "-"}</td>
+                    <td className="text-center">{item.returnedBy || "-"}</td>
                     <td className="text-center">{item.initialCount     }</td>
                     <td className="text-center">{item.currentCount     }</td>
                     <td className="text-center"><Time iso={item.lastModified}/></td>
