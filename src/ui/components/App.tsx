@@ -1,9 +1,19 @@
-import { Check, ChevronsLeft, ChevronsRight, Eraser, Hash, Package, Plus, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
+import { Check, ChevronsLeft, ChevronsRight, Dice1, Eraser, Hash, Package, PartyPopper, Plus, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, TicketPercent, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
 import { useEffect, useState } from "react";
+import clsx from "clsx"
 import ghdb from "../../ghdb"
 import { useInventory, type Item, type Status } from "../stores/useInventory";
+import { sample } from "lodash";
 
 const resource = "https://api.github.com/repos/ptec/wfc-db/contents/db.json"
+
+interface Seller {
+  id   : string
+  borrowed : number
+  returned : number
+  completed: number
+  tickets  : number
+}  
 
 function getField(form: FormData, id: string, alt: string = "") {
   return form.get(id)?.toString() ?? alt
@@ -73,6 +83,9 @@ export default function App() {
   const [initialCount, setInitialCount] = useState(60)
   const [currentCount, setCurrentCount] = useState( 0)
   const [borrowedBy  , setBorrowedBy  ] = useState<string | null>(null)
+
+  const [raffleCutoff, setRaffleCutoff] = useState(new Date())
+  const [raffleWinner, setRaffleWinner] = useState<Seller | undefined>()
 
   const checkInOptions = Object.entries(items).filter(([id, item]) => (
     (
@@ -160,6 +173,59 @@ export default function App() {
       item.currentCount < item.initialCount
     )
   ))
+
+
+
+  const sellers = Object.entries(items).reduce((sellers: Array<Seller>, [id, item]) => {
+    if(item.status === "missing") return sellers
+
+    let seller;
+
+    if (item.returnedBy) {
+      seller = sellers.find((seller) => seller.id === item.returnedBy)
+      if(!seller) sellers = [
+        ...sellers, seller = {
+          id: item.returnedBy,
+          borrowed : 0,
+          returned : 0,
+          completed: 0,
+          tickets  : 0
+        }
+      ]
+      seller.returned ++;
+    }
+    
+    if (item.borrowedBy) {
+      seller = sellers.find((seller) => seller.id === item.borrowedBy)
+      if(!seller) sellers = [
+        ...sellers, seller = {
+          id: item.borrowedBy,
+          borrowed : 0,
+          returned : 0,
+          completed: 0,
+          tickets  : 0
+        }
+      ]
+      seller.borrowed ++;
+    }
+
+    if (seller && item.currentCount === 0) {
+      seller.completed ++;
+
+      if (new Date(item.lastModified) >= raffleCutoff)
+        seller.tickets ++;
+      
+    }
+
+    return sellers
+  }, [ ]).sort((a, b) => {
+    let k;
+    if ((k = b.tickets   - a.tickets  ) !== 0) return k
+    if ((k = b.completed - a.completed) !== 0) return k
+    if ((k = b.returned  - a.returned ) !== 0) return k
+    if ((k = b.borrowed  - a.borrowed ) !== 0) return k
+    return 0
+  })
 
   function tryCreateItem(id: string, count: number) {
     try {
@@ -546,7 +612,7 @@ export default function App() {
               </thead>
               <tbody>
                 { Object.entries(items).map(([id, item]) => {
-                  return <tr key={id}>
+                  return <tr key={id} className="hover:bg-base-300">
                     <td className="text-center"><pre>{id}</pre></td>
                     <td><Status item={item}/></td>
                     <td className="text-center">{item.borrowedBy || "-"}</td>
@@ -554,6 +620,78 @@ export default function App() {
                     <td className="text-center">{item.initialCount     }</td>
                     <td className="text-center">{item.currentCount     }</td>
                     <td className="text-center"><Time iso={item.lastModified}/></td>
+                  </tr>
+                })}
+              </tbody>
+            </table>
+            <div className="h-48"></div>
+          </div>
+        </div>
+
+        <input type="radio" name="tabs" className="tab" aria-label="Raffle" />
+        <div className="tab-content p-6">
+          <div className="w-full flex flex-col items-center">
+            
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6">
+              <span className="text-2xl font-semibold">Raffle</span>
+              <span className="italic">Randomly select a winner from the list of top sellers</span>
+              
+              <label className="join self-center w-xs items-center">
+                <label className="input basis-0 join-item font-bold">Raffle Cutoff</label>
+                <input type="date" className="input join-item grow" value={raffleCutoff.toISOString().split("T")[0]} onChange={(e) => {
+                  setRaffleCutoff(new Date(e.target.value))
+                }}/>
+              </label>
+              <button type="button" className="self-center w-xs btn btn-secondary" onClick={() => {
+                const tickets = sellers.reduce((tickets: Array<string>, seller) => {
+                  if (seller.tickets === 0) return tickets
+                  return [...tickets, ...new Array(seller.tickets).fill(seller.id)]
+                }, [ ])
+                const winningId     = sample(tickets)
+                const winningSeller = sellers.find(seller => seller.id === winningId)
+                setRaffleWinner(winningSeller)
+                if(winningSeller)
+                  alert(`The raffle winner is - '${winningSeller.id}'`)
+                else
+                  alert("A raffle winner could not be selected")
+              }}><TicketPercent/> Raffle</button>
+
+              { raffleWinner && <div className="self-center w-xs p-4 rounded-lg border-2 border-dashed border-base-300 flex gap-2 items-center justify-between">
+                <PartyPopper/>
+                <span className="text-xl font-semibold">{raffleWinner.id}</span>
+                <button className="btn btn-ghost" onClick={
+                  () => setRaffleWinner(undefined)
+                }><RotateCcw/></button>
+              </div>}
+            </form>
+
+            <span className="text-2xl font-semibold mt-8">Top Sellers</span>
+
+            <table className="table w-3xl">
+              <thead>
+                <tr>
+                  <th className="text-center">Id       </th>
+                  <th className="text-center">Tickets  </th>
+                  <th className="text-center">Completed</th>
+                  <th className="text-center">Returned </th>
+                  <th className="text-center">Borrowed </th>
+                </tr>
+              </thead>
+              <tbody>
+                { sellers.map((seller) => {
+                  return <tr key={seller.id} className={clsx(seller.tickets > 0 && "bg-base-100", "hover:bg-base-300")}>
+                    <td className="text-center"><pre>{seller.id}</pre></td>
+                    <td className="text-center">{ seller.tickets > 0 ?
+                      <span className="flex flex-nowrap gap-2 justify-center items-center">
+                        <Ticket/>
+                        <span className="font-mono font-bold">{seller.tickets}</span>
+                      </span>
+                      :
+                      <span className="font-mono font-bold text-center">-</span>
+                    }</td>
+                    <td className="text-center">{seller.completed || "-"}</td>
+                    <td className="text-center">{seller.returned  || "-"}</td>
+                    <td className="text-center">{seller.borrowed  || "-"}</td>
                   </tr>
                 })}
               </tbody>
