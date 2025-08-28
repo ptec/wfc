@@ -385,7 +385,7 @@ export default function App() {
         <input type="radio" name="tabs" className="tab" aria-label="Check Out"/>
         <div className="tab-content p-6">
           <div className="flex flex-col w-full items-center gap-2">
-            <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
 
               const form  = new FormData(e.currentTarget)
@@ -455,7 +455,7 @@ export default function App() {
         <input type="radio" name="tabs" className="tab" aria-label="Check In" />
         <div className="tab-content p-6">
           <div className="flex flex-col w-full items-center gap-2">
-            <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
 
               const form  = new FormData(e.currentTarget)
@@ -565,7 +565,7 @@ export default function App() {
         <input type="radio" name="tabs" className="tab" aria-label="Manage" />
         <div className="tab-content p-6">
           <div className="flex flex-col w-full items-center gap-2">
-            <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
 
               const form  = new FormData(e.currentTarget)
@@ -605,7 +605,7 @@ export default function App() {
 
             <div className="divider self-center w-lg"></div>
 
-            <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
 
               if (!items[missingQuery]) return
@@ -646,7 +646,7 @@ export default function App() {
 
             <div className="divider self-center w-lg"></div>
 
-            <form className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6" onSubmit={(e) => {
               e.preventDefault()
               if (!items[deleteQuery]) return
               const dialog = document.getElementById("confirm_delete") as HTMLDialogElement
@@ -735,7 +735,7 @@ export default function App() {
           <p className="italic text-center">This action cannot be undone.</p>
         </div>
         <div className="modal-action">
-          <form method="dialog" className="flex gap-1">
+          <form autoComplete="off" method="dialog" className="flex gap-1">
             {/* if there is a button in form, it will close the modal */}
             <button className="btn" onClick={() => {
               setMissingQuery("")
@@ -793,7 +793,7 @@ export default function App() {
           <p className="italic text-center">This action cannot be undone.</p>
         </div>
         <div className="modal-action">
-          <form method="dialog" className="flex gap-1">
+          <form autoComplete="off" method="dialog" className="flex gap-1">
             {/* if there is a button in form, it will close the modal */}
             <button className="btn" onClick={() => {
               setDeleteQuery("")
