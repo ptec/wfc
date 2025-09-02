@@ -227,8 +227,9 @@ export default function App() {
     return 0
   })
 
-  function tryCreateItem(id: string, count: number) {
+  async function tryCreateItem(id: string, count: number) {
     try {
+      await pullRemote(db!)
       createItem(id, {
         status: "checked-in",
         borrowedBy: null,
@@ -237,32 +238,38 @@ export default function App() {
         currentCount: count,
         lastModified: new Date().toISOString()
       })
-      pushRemote(db!).then(() => alert(`Item '${id}' created`))
+      await pushRemote(db!)
+      alert(`Item '${id}' created`)
     } catch (error: any) {
       alert(error.message)
     }
   }
 
-  function tryDeleteItem(id: string) {
+  async function tryDeleteItem(id: string) {
     try {
+      await pullRemote(db!)
       deleteItem(id )
-      pushRemote(db!).then(() => alert(`Item '${id}' deleted`))
+      await pushRemote(db!)
+      alert(`Item '${id}' deleted`)
     } catch (error: any) {
       alert(error.message)
     }
   }
 
-  function tryUpdateItemCount(id: string, currentCount: number) {
+  async function tryUpdateItemCount(id: string, currentCount: number) {
     try {
+      await pullRemote(db!)
       updateItem(id, (item) => ({...item, currentCount }))
-      pushRemote(db!).then(() => alert(`Item '${id}' updated`))
+      await pushRemote(db!)
+      alert(`Item '${id}' updated`)
     } catch (error: any) {
       alert(error.message)
     }
   }
 
-  function tryCheckOutItem(id: string, borrowedBy: string) {
+  async function tryCheckOutItem(id: string, borrowedBy: string) {
     try {      
+      await pullRemote(db!)
       updateItem(id, (item) => {
         if (item.status === "checked-out") throw new Error(`Item '${id}' is checked out`)
         if (item.status === "missing"    ) throw new Error(`Item '${id}' is missing`)
@@ -270,14 +277,16 @@ export default function App() {
 
         return {...item, status: "checked-out", borrowedBy, returnedBy: null }
       })
-      pushRemote(db!).then(() => alert(`Item '${id}' checked out to '${borrowedBy}'`))
+      await pushRemote(db!)
+      alert(`Item '${id}' checked out to '${borrowedBy}'`)
     } catch (error: any) {
       alert(error.message)
     }
   }
 
-  function tryCheckInItem(id: string, currentCount: number) {
+  async function tryCheckInItem(id: string, currentCount: number) {
     try {
+      await pullRemote(db!)
       updateItem(id, (item) => {
         if (currentCount > item.currentCount) throw new Error(`Cannot check in more than '${item.currentCount}'`)
         if (item.status === "checked-in") throw new Error(`Item '${id}' is checked in`)
@@ -286,16 +295,19 @@ export default function App() {
         const returnedBy = item.borrowedBy
         return {...item, status: "checked-in" , currentCount, returnedBy, borrowedBy: null }
       })
-      pushRemote(db!).then(() => alert(`Item '${id}' checked in with '${currentCount}' remaining`))
+      await pushRemote(db!)
+      alert(`Item '${id}' checked in with '${currentCount}' remaining`)
     } catch (error: any) {
       alert(error.message)
     }
   }
 
-  function tryMarkMissingItem(id: string) {
+  async function tryMarkMissingItem(id: string) {
     try {
+      await pullRemote(db!)
       updateItem(id, (item) => ({...item, status: "missing" }))
-      pushRemote(db!).then(() => alert(`Item '${id}' marked missing`))
+      await pushRemote(db!)
+      alert(`Item '${id}' marked missing`)
     } catch (error: any) {
       alert(error.message)
     }
