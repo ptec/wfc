@@ -24,13 +24,13 @@ function Status({ item }: { item: Item }) {
     case "missing"    : return <div className="font-semibold w-32 text-sm rounded-full border text-error bg-error/15 border-error flex justify-center">missing    </div>
     case "checked-in" : {
       if(item.currentCount <= 0)
-        return <div className="font-semibold w-32 text-sm rounded-full border text-primary bg-primary/15 border-primary flex justify-center">completed</div>
+        return <div className="font-semibold w-32 text-sm rounded-full border text-success bg-success/15 border-success flex justify-center">completed</div>
 
       if(item.currentCount < item.initialCount)
         return <div className="font-semibold w-32 text-sm rounded-full border text-warning bg-warning/15 border-warning flex justify-center">incomplete</div>
 
       if(item.currentCount === item.initialCount)
-        return <div className="font-semibold w-32 text-sm rounded-full border text-success bg-success/15 border-success flex justify-center">checked-in</div>
+        return <div className="font-semibold w-32 text-sm rounded-full border text-primary bg-primary/15 border-primary flex justify-center">checked-in</div>
     }
     case "checked-out": return <div className="font-semibold w-32 text-sm rounded-full border text-warning bg-warning/15 border-warning flex justify-center">checked-out</div>
   }
@@ -173,8 +173,6 @@ export default function App() {
       item.currentCount < item.initialCount
     )
   ))
-
-
 
   const sellers = Object.entries(items).reduce((sellers: Array<Seller>, [id, item]) => {
     if(item.status === "missing") return sellers
@@ -339,10 +337,10 @@ export default function App() {
             <div className="flex justify-center w-4xl gap-4 flex-wrap">
 
               <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
-                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-primary bg-primary/15 text-primary flex justify-center">
+                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-success bg-success/15 text-success flex justify-center">
                   Completed
                 </span>
-                <div className="w-full flex items-center justify-between text-primary">
+                <div className="w-full flex items-center justify-between text-success">
                   <div className="flex flex-col gap-1 items-center">
                     <p className="text-4xl font-bold">{boxesSold}</p>
                     <p className="text-sm">Boxes</p>
@@ -356,14 +354,14 @@ export default function App() {
                     <p className="text-sm">of Total Inventory</p>
                   </div>
                 </div>
-                <progress className="progress progress-primary" value={barsSold} max={totalBars}/>
+                <progress className="progress progress-success" value={barsSold} max={totalBars}/>
               </div>
 
               <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
-                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-success bg-success/15 text-success flex justify-center">
+                <span className="w-full text-2xl font-bold p-1 rounded-lg border border-primary bg-primary/15 text-primary flex justify-center">
                   Available
                 </span>
-                <div className="w-full flex items-center justify-between text-success">
+                <div className="w-full flex items-center justify-between text-primary">
                   <div className="flex flex-col gap-1 items-center">
                     <p className="text-4xl font-bold">{boxesCheckedIn}</p>
                     <p className="text-sm">Boxes</p>
@@ -377,7 +375,7 @@ export default function App() {
                     <p className="text-sm">of Total Inventory</p>
                   </div>
                 </div>
-                <progress className="progress progress-success" value={barsCheckedIn} max={totalBars}/>
+                <progress className="progress progress-primary" value={barsCheckedIn} max={totalBars}/>
               </div>
 
               <div className="w-100 h-50 bg-base-100 rounded-lg shadow-sm flex flex-col gap-1 p-8 items-center">
