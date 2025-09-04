@@ -555,7 +555,7 @@ export default function App() {
                       lastModified: new Date().toISOString()
                     }
                   })
-                  window.open(`./wfc/receipt?items=${encodeURIComponent(receipt)}`, "_blank")
+                  window.open(`/wfc/receipt?items=${encodeURIComponent(receipt)}`, "_blank")
                 }
               })
               e.currentTarget.reset()
@@ -656,7 +656,7 @@ export default function App() {
                   return receipts
                 }, { }))
 
-                window.open(`./wfc/receipt?items=${encodeURIComponent(receipts)}`, "_blank")
+                window.open(`/wfc/receipt?items=${encodeURIComponent(receipts)}`, "_blank")
 
               }}>Generate <Receipt/></button>
             </form>
@@ -687,7 +687,7 @@ export default function App() {
                     <td className="text-center">{item.currentCount     }</td>
                     <td className="text-center"><Time iso={item.lastModified}/></td>
                     <td className="text-center">
-                      <a className={clsx("btn btn-sm btn-circle btn-secondary", (item.currentCount !== 0) && "btn-dash")} href={`./wfc/receipt?items=${encodeURIComponent(JSON.stringify({ [id]: item }))}`} target="_blank"><Receipt/></a>
+                      <a className={clsx("btn btn-sm btn-circle btn-secondary", (item.currentCount !== 0) && "btn-dash")} href={`/wfc/receipt?items=${encodeURIComponent(JSON.stringify({ [id]: item }))}`} target="_blank"><Receipt/></a>
                     </td>
                   </tr>
                 })}
