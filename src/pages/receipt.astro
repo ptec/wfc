@@ -1,0 +1,17 @@
+---
+import "../ui/styles/receipt.css";
+import Receipts from "../ui/components/Receipt";
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>PTEC - World's Finest Chocolate</title>
+	</head>
+	<body class="w-dvw h-dvh flex flex-col font-figtree">
+		<Receipts client:only/>
+  </body>
+</html>

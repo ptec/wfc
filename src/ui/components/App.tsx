@@ -1,9 +1,9 @@
-import { Check, ChevronsLeft, ChevronsRight, Dice1, Eraser, Hash, Package, PartyPopper, Plus, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, TicketPercent, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
+import { Check, ChevronsLeft, ChevronsRight, Dice1, Eraser, Hash, Package, PartyPopper, Plus, Receipt, RotateCcw, ScanBarcode, Table, Tag, Ticket, TicketCheck, TicketPercent, Trash, Triangle, TriangleAlert, UserRound, X } from "lucide-react"
 import { useEffect, useState } from "react";
 import clsx from "clsx"
 import ghdb from "../../ghdb"
 import { useInventory, type Item, type Status } from "../stores/useInventory";
-import { sample } from "lodash";
+import { initial, sample } from "lodash";
 
 const resource = "https://api.github.com/repos/ptec/wfc-db/contents/db.json"
 
@@ -19,7 +19,7 @@ function getField(form: FormData, id: string, alt: string = "") {
   return form.get(id)?.toString() ?? alt
 }
 
-function Status({ item }: { item: Item }) {
+export function Status({ item }: { item: Item }) {
   switch(item.status) {
     case "missing"    : return <div className="font-semibold w-32 text-sm rounded-full border text-error bg-error/15 border-error flex justify-center">missing    </div>
     case "checked-in" : {
@@ -86,6 +86,9 @@ export default function App() {
 
   const [raffleCutoff, setRaffleCutoff] = useState(new Date())
   const [raffleWinner, setRaffleWinner] = useState<Seller | undefined>()
+
+  const [receiptCutoff, setReceiptCutoff] = useState(new Date())
+  const [onlyCompleted, setOnlyCompleted] = useState(true)
 
   const checkInOptions = Object.entries(items).filter(([id, item]) => (
     (
@@ -536,10 +539,25 @@ export default function App() {
 
               const form  = new FormData(e.currentTarget)
 
-              const id    =         (getField(form, "id"   ))
-              const count = parseInt(getField(form, "count"))
+              const id      =         (getField(form, "id"     ))
+              const count   = parseInt(getField(form, "count"  ))
+              const receipt = Boolean (getField(form, "receipt"))
 
-              tryCheckInItem(id, count)
+              tryCheckInItem(id, count).then(() => {
+                if(receipt) {
+                  const receipt = JSON.stringify({
+                    [id]: {
+                      status: "checked-in",
+                      borrowedBy: null,
+                      returnedBy: items[id].borrowedBy,
+                      initialCount: items[id].initialCount,
+                      currentCount:                  count,
+                      lastModified: new Date().toISOString()
+                    }
+                  })
+                  window.open(`./wfc/receipt?items=${encodeURIComponent(receipt)}`, "_blank")
+                }
+              })
               e.currentTarget.reset()
               setCheckInQuery("")
               setCurrentCount(0)
@@ -597,10 +615,16 @@ export default function App() {
 
               <label className="cursor-pointer self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
                 <input required type="checkbox" className="checkbox checkbox-secondary"/>
-                <span className="italic text-center">This student has surrendered the appropriate funds {!!items[checkInQuery] && <b>(${items[checkInQuery].currentCount - currentCount})</b>} to return this item</span>
+                <span className="italic text-center">This student has surrendered the exact funds {!!items[checkInQuery] && <b>(${items[checkInQuery].currentCount - currentCount})</b>} to return this item</span>
               </label>
 
-              <button type="submit" className="btn btn-secondary self-center w-xs"><Check/> Check In</button>
+              <div className="flex flex-row gap-2 self-center w-xs">
+                <button type="submit" className="join-item btn btn-secondary grow"><Check/> Check In</button>
+                <label className="join-item grow cursor-pointer self-center flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
+                  <span className="w-full italic text-center flex justify-center items-center gap-1 flex-nowrap"><Receipt/> With Receipt </span>
+                  <input name="receipt" type="checkbox" className="checkbox checkbox-secondary"/>
+                </label>
+              </div>
             </form>
           </div>
         </div>
@@ -608,6 +632,37 @@ export default function App() {
         <input type="radio" name="tabs" className="tab" aria-label="Inventory" />
         <div className="tab-content p-6">
           <div className="w-full flex flex-col items-center">
+            <form autoComplete="off" className="w-lg flex flex-col gap-2 bg-base-100 rounded-lg shadow-sm p-6">
+              <span className="text-2xl font-semibold">Receipts</span>
+              <span className="italic">Generate multiple receipts</span>
+              
+              <label className="join self-center w-xs items-center">
+                <label className="input basis-0 join-item font-bold">Receipt Cutoff</label>
+                <input type="date" className="input join-item grow" value={receiptCutoff.toISOString().split("T")[0]} onChange={(e) => {
+                  setReceiptCutoff(new Date(e.target.value))
+                }}/>
+              </label>
+
+              {/* <label className="cursor-pointer self-center w-xs flex gap-1 items-center rounded-lg p-2 border border-dashed border-secondary bg-secondary/15 text-secondary">
+                <input type="checkbox" className="checkbox checkbox-secondary" defaultChecked={onlyCompleted}/>
+                <span className="italic text-center w-full">Include only completed items</span>
+              </label> */}
+
+              <button type="button" className="btn btn-secondary w-xs self-center" onClick={() => {
+                const receipts = JSON.stringify(Object.entries(items).filter(([id, item]) => (
+                  new Date(item.lastModified) > receiptCutoff && item.returnedBy && item.currentCount === 0
+                )).reduce((receipts: {[key: string]: Item}, [id, item]) => {
+                  receipts[id] = item
+                  return receipts
+                }, { }))
+
+                window.open(`./wfc/receipt?items=${encodeURIComponent(receipts)}`, "_blank")
+
+              }}>Generate <Receipt/></button>
+            </form>
+
+            <span className="text-2xl font-semibold mt-8">Inventory</span>
+            
             <table className="table w-3xl">
               <thead>
                 <tr>
@@ -618,11 +673,12 @@ export default function App() {
                   <th className="text-center">Initial Count</th>
                   <th className="text-center">Current Count</th>
                   <th className="text-center">Last Modified</th>
+                  <th className="text-center">Receipt      </th>
                 </tr>
               </thead>
               <tbody>
                 { Object.entries(items).map(([id, item]) => {
-                  return <tr key={id} className="hover:bg-base-300">
+                  return <tr key={id} className="hover:bg-base-100">
                     <td className="text-center"><pre>{id}</pre></td>
                     <td><Status item={item}/></td>
                     <td className="text-center">{item.borrowedBy || "-"}</td>
@@ -630,6 +686,9 @@ export default function App() {
                     <td className="text-center">{item.initialCount     }</td>
                     <td className="text-center">{item.currentCount     }</td>
                     <td className="text-center"><Time iso={item.lastModified}/></td>
+                    <td className="text-center">
+                      <a className={clsx("btn btn-sm btn-circle btn-secondary", (item.currentCount !== 0) && "btn-dash")} href={`./wfc/receipt?items=${encodeURIComponent(JSON.stringify({ [id]: item }))}`} target="_blank"><Receipt/></a>
+                    </td>
                   </tr>
                 })}
               </tbody>
@@ -689,7 +748,7 @@ export default function App() {
               </thead>
               <tbody>
                 { sellers.map((seller) => {
-                  return <tr key={seller.id} className={clsx(seller.tickets > 0 && "bg-base-100", "hover:bg-base-300")}>
+                  return <tr key={seller.id} className={clsx(seller.tickets > 0 && "bg-base-300", "hover:bg-base-100")}>
                     <td className="text-center"><pre>{seller.id}</pre></td>
                     <td className="text-center">{ seller.tickets > 0 ?
                       <span className="flex flex-nowrap gap-2 justify-center items-center">
