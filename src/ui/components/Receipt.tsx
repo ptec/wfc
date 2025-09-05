@@ -53,8 +53,9 @@ export default function Receipts() {
   console.log(items)
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search)
-    setItems(JSON.parse(p.get("items") ?? "{}"))
+    const receipts = window.localStorage.getItem("receipts")
+    window.localStorage.removeItem("receipts")
+    setItems(JSON.parse(receipts ?? "{}"))
   }, [ ])
 
   return <div className="flex flex-col gap-2">
