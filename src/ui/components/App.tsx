@@ -32,7 +32,7 @@ export function Status({ item }: { item: Item }) {
       if(item.currentCount === item.initialCount)
         return <div className="font-semibold w-32 text-sm rounded-full border text-primary bg-primary/15 border-primary flex justify-center">checked-in</div>
     }
-    case "checked-out": return <div className="font-semibold w-32 text-sm rounded-full border text-warning bg-warning/15 border-warning flex justify-center">checked-out</div>
+    case "checked-out": return <div className="font-semibold w-32 text-sm rounded-full border text-accent bg-accent/15 border-accent flex justify-center">checked-out</div>
   }
 }
 
@@ -175,7 +175,11 @@ export default function App() {
       item.currentCount >                 0 && 
       item.currentCount < item.initialCount
     )
-  ))
+  )).sort(([idA, itemA], [idB, itemB]) => {
+    if (itemA.status === "checked-in" && itemB.status === "checked-out") return  1
+    if (itemA.status === "checked-out" && itemB.status === "checked-in") return -1
+    return idA.localeCompare(idB)
+  })
 
   const sellers = Object.entries(items).reduce((sellers: Array<Seller>, [id, item]) => {
     if(item.status === "missing") return sellers
@@ -434,6 +438,10 @@ export default function App() {
                     {item.borrowedBy && <div className="flex gap-1">
                       <span>Checked out by</span> 
                       <span className="font-semibold">{item.borrowedBy}</span>
+                    </div>}
+                    {item.returnedBy && <div className="flex gap-1">
+                      <span>Returned by</span> 
+                      <span className="font-semibold">{item.returnedBy}</span>
                     </div>}
                     <div className="grow"></div>
                     <div className="flex justify-between">
