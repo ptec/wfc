@@ -104,44 +104,42 @@ export default function App() {
       )}
 
       { !!accessToken && !fetchingBoxes && !fetchingParticipants && !fetchingDefaults && (
-        <Page>
-          <div className="tabs tabs-box grow">
-            <input type="radio" name="wfc" className="tab" aria-label="Dashboard" defaultChecked />
-            <div className="tab-content">
+        <div className="tabs tabs-box flex w-full">
+          <input type="radio" name="wfc" className="tab" aria-label="Dashboard" defaultChecked />
+          <div className="tab-content">
 
-            </div>
+          </div>
 
-            <input type="radio" name="wfc" className="tab" aria-label="Check Out" />
-            <div className="tab-content">
-              <div className="flex justify-center items-center">
-                <BorrowBox />
-              </div>
-            </div>
-
-            <input type="radio" name="wfc" className="tab" aria-label="Check In" />
-            <div className="tab-content">
-              <div className="flex justify-center items-center">
-                <ReturnBox />
-              </div>
-            </div>
-
-            <input type="radio" name="wfc" className="tab" aria-label="Inventory" />
-            <div className="tab-content">
-              <div className="flex flex-col">
-                {/* <CreateBox /> */}
-                <Boxes />
-              </div>
-            </div>
-
-            <input type="radio" name="wfc" className="tab" aria-label="Participants" />
-            <div className="tab-content">
-              <div className="flex flex-col">
-                <CreateParticipant />
-                <Participants />
-              </div>
+          <input type="radio" name="wfc" className="tab" aria-label="Check Out" />
+          <div className="tab-content">
+            <div className="flex justify-center items-center">
+              <BorrowBox />
             </div>
           </div>
-        </Page>
+
+          <input type="radio" name="wfc" className="tab" aria-label="Check In" />
+          <div className="tab-content">
+            <div className="flex justify-center items-center">
+              <ReturnBox />
+            </div>
+          </div>
+
+          <input type="radio" name="wfc" className="tab" aria-label="Inventory" />
+          <div className="tab-content">
+            <div className="flex flex-col self-start">
+              {/* <CreateBox /> */}
+              <Boxes />
+            </div>
+          </div>
+
+          <input type="radio" name="wfc" className="tab" aria-label="Participants" />
+          <div className="tab-content">
+            <div className="flex flex-col">
+              <CreateParticipant />
+              <Participants />
+            </div>
+          </div>
+        </div>
       )}
 
     </AppContext.Provider>
