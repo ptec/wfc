@@ -1,18 +1,13 @@
 import { createContext, useEffect, useState } from "react";
 import { GET } from "./api/gas";
 import type { Box, Participant } from "./api/types";
+import Page from "./ui/components/Page";
+import BorrowBox from "./ui/views/BorrowBox";
+import Boxes from "./ui/views/Boxes";
 import CreateParticipant from "./ui/views/CreateParticipant";
 import Login from "./ui/views/Login";
 import Participants from "./ui/views/Participants";
-import BorrowBox from "./ui/views/BorrowBox";
 import ReturnBox from "./ui/views/ReturnBox";
-import MissingBox from "./ui/views/MissingBox";
-import DeleteBox from "./ui/views/DeleteBox";
-import Boxes from "./ui/views/Boxes";
-import CreateBox from "./ui/views/CreateBox";
-import Page from "./ui/components/Page";
-
-
 
 export const AppContext = createContext( {
   accessToken : ""                 , setAccessToken   : (() => {}) as React.Dispatch<React.SetStateAction<string>>,
@@ -133,7 +128,7 @@ export default function App() {
             <input type="radio" name="wfc" className="tab" aria-label="Inventory" />
             <div className="tab-content">
               <div className="flex flex-col">
-                <CreateBox />
+                {/* <CreateBox /> */}
                 <Boxes />
               </div>
             </div>

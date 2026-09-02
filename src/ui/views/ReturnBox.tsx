@@ -1,8 +1,8 @@
-import { Check, ChevronsLeft, ChevronsRight, Eraser, Hash, Receipt, ScanBarcode } from "lucide-react"
+import { Check, ChevronsLeft, ChevronsRight, Eraser, Hash, ScanBarcode } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../App";
-import type { Box } from "../../api/types";
 import { POST } from "../../api/gas";
+import type { Box } from "../../api/types";
 
 export default function ReturnBox() {
   const {accessToken, boxes, setBoxes, defaultPricePerBar } = useContext(AppContext);

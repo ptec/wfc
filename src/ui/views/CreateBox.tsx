@@ -6,6 +6,7 @@ export default function CreateBox() {
   const { boxes, defaultInitialCount } = useContext(AppContext);
   
   const [newBoxId    , setNewBoxId    ] = useState("");
+  //@ts-ignore
   const [creatingBox , setCreatingBox ] = useState(false);
   const [initialCount, setInitialCount] = useState(defaultInitialCount);
 

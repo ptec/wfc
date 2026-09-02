@@ -6,7 +6,7 @@ import Card from "../components/Card";
 import Page from "../components/Page";
 
 export default function Login() {
-  const { accessToken, setAccessToken } = useContext(AppContext);
+  const { setAccessToken } = useContext(AppContext);
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess({access_token}) {

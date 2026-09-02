@@ -1,11 +1,11 @@
 import { Check, Receipt as ReceiptIcon, Search, Trash, TriangleAlert } from "lucide-react";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 import { POST } from "../../api/gas";
 import type { Box } from "../../api/types";
 import { AppContext } from "../../App";
 import BoxStatus from "../components/BoxStatus";
 import LastModified from "../components/LastModified";
-import { useReactToPrint } from "react-to-print";
 import { Receipt } from "./Receipt";
 
 export default function Boxes() {
@@ -25,6 +25,7 @@ export default function Boxes() {
     return boxes.find(box => box.id === id.trim().toUpperCase());
   }
 
+  //@ts-ignore
   function hasBoxWithId(id: string) {
     return getBoxWithId(id) !== undefined;
   }
@@ -203,7 +204,7 @@ export default function Boxes() {
                       <span>Delete Box</span>
                     </div>
                     <div className="flex justify-center">
-                      <button className="btn btn-error btn-ghost btn-circle btn-sm m-1" disabled={!!updatingBox}>
+                      <button className="btn btn-error btn-ghost btn-circle btn-sm m-1" disabled={!!updatingBox} onClick={() => deleteBox(box.id, box.transactionId)}>
                         <Trash size={14} />
                       </button>
                     </div>

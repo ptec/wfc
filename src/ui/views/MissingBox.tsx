@@ -1,14 +1,14 @@
-import { useContext, useEffect, useState } from "react";
-import { AppContext } from "../../App";
 import { Eraser, ScanBarcode, TriangleAlert } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
 import type { Box } from "../../api/types";
+import { AppContext } from "../../App";
 import BoxStatus from "../components/BoxStatus";
 
 
 
 
 export default function MissingBox() {
-  const { accessToken, boxes, setBoxes } = useContext(AppContext);
+  const { boxes } = useContext(AppContext);
 
   const [boxQuery  , setBoxQuery  ] = useState("");
   const [boxOptions, setBoxOptions] = useState<Box[]>([]);

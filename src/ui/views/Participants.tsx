@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import { Ban, Search, Trash } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
 import { POST } from "../../api/gas";
 import type { Participant } from "../../api/types";
+import { AppContext } from "../../App";
 import LastModified from "../components/LastModified";
 import ParticipantStatus from "../components/ParticipantStatus";
-import { Ban, Lock, Search, Trash, X } from "lucide-react";
-import { AppContext } from "../../App";
 
 function isApproved(participant: Participant) {
   return participant.status.trim().toLowerCase() === "approved";
