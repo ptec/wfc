@@ -8,6 +8,7 @@ import CreateParticipant from "./ui/views/CreateParticipant";
 import Login from "./ui/views/Login";
 import Participants from "./ui/views/Participants";
 import ReturnBox from "./ui/views/ReturnBox";
+import Dashboard from "./ui/views/Dashboard";
 
 export const AppContext = createContext( {
   accessToken : ""                 , setAccessToken   : (() => {}) as React.Dispatch<React.SetStateAction<string>>,
@@ -107,7 +108,7 @@ export default function App() {
         <div className="tabs tabs-box flex w-full">
           <input type="radio" name="wfc" className="tab" aria-label="Dashboard" defaultChecked />
           <div className="tab-content">
-
+            <Dashboard />
           </div>
 
           <input type="radio" name="wfc" className="tab" aria-label="Check Out" />
